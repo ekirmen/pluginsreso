@@ -39,6 +39,11 @@ private:
 	unsigned int idxInvertAlpha;
 	unsigned int idxPreviewMode;
 	unsigned int idxSelectionMode;
+	unsigned int idxLocalSelection;
+	unsigned int idxSelectionX;
+	unsigned int idxSelectionY;
+	unsigned int idxSelectionRadius;
+	unsigned int idxSelectionFeather;
 	unsigned int idxInstaLink;
 	unsigned int idxStoreLink;
 };
