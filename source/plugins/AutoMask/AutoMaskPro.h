@@ -21,6 +21,7 @@ private:
 	float lastThreshold2;
 	float lastThreshold3;
 	float lastSoftness;
+	bool isValidating;
 
 	// Índices de parámetros
 	unsigned int idxAutoPick;

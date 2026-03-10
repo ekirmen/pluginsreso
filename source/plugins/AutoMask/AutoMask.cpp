@@ -1,4 +1,5 @@
 #define WIN32_LEAN_AND_MEAN
+#define NOMINMAX
 #include <windows.h>
 #include <shellapi.h>
 #pragma comment( lib, "shell32.lib" )
@@ -7,6 +8,7 @@
 #include "ffglquickstart/FFGLParamRange.h"
 #include "ffglquickstart/FFGLParamOption.h"
 #include "ffglquickstart/FFGLParamTrigger.h"
+#include <algorithm>
 #include <cmath>
 #include <cstdio>
 
@@ -54,33 +56,38 @@ void main()
     vec4 base = texture2D(inputTexture, i_uv);
     vec3 rgb = base.rgb;
 
-    // Auto-pick de 4 esquinas
-    vec3 c1 = texture2D(inputTexture, vec2(0.02, 0.02)).rgb;
-    vec3 c2 = texture2D(inputTexture, vec2(0.98, 0.02)).rgb;
-    vec3 c3 = texture2D(inputTexture, vec2(0.02, 0.98)).rgb;
-    vec3 c4 = texture2D(inputTexture, vec2(0.98, 0.98)).rgb;
-    vec3 avgCorner = (c1 + c2 + c3 + c4) / 4.0;
-    
-    vec3 k1 = mix(Key_Color.rgb, avgCorner, step(0.5, Auto_Pick));
+    vec3 k1 = Key_Color.rgb;
+    if (Auto_Pick > 0.5) {
+        // Auto-pick de 4 esquinas (solo cuando está activo)
+        vec3 c1 = texture2D(inputTexture, vec2(0.02, 0.02)).rgb;
+        vec3 c2 = texture2D(inputTexture, vec2(0.98, 0.02)).rgb;
+        vec3 c3 = texture2D(inputTexture, vec2(0.02, 0.98)).rgb;
+        vec3 c4 = texture2D(inputTexture, vec2(0.98, 0.98)).rgb;
+        k1 = (c1 + c2 + c3 + c4) * 0.25;
+    }
+
     vec3 k2 = Key_Color_2.rgb;
     vec3 k3 = Key_Color_3.rgb;
 
     float soft = max(Softness, 0.001);
-    
+    float softEnd1 = Threshold_1 * 0.5 + soft;
+    float softEnd2 = Threshold_2 * 0.5 + soft;
+    float softEnd3 = Threshold_3 * 0.5 + soft;
+
     // Calcular máscaras
-    float dist1 = distance(rgb, k1);
-    float m1 = 1.0 - smoothstep(Threshold_1 * 0.5, Threshold_1 * 0.5 + soft, dist1);
+    float dist1 = dot(rgb - k1, rgb - k1);
+    float m1 = 1.0 - smoothstep(Threshold_1 * 0.5, softEnd1, sqrt(dist1));
     
     float m2 = 0.0;
     if (Enable_2 > 0.5) {
-        float dist2 = distance(rgb, k2);
-        m2 = 1.0 - smoothstep(Threshold_2 * 0.5, Threshold_2 * 0.5 + soft, dist2);
+        float dist2 = dot(rgb - k2, rgb - k2);
+        m2 = 1.0 - smoothstep(Threshold_2 * 0.5, softEnd2, sqrt(dist2));
     }
 
     float m3 = 0.0;
     if (Enable_3 > 0.5) {
-        float dist3 = distance(rgb, k3);
-        m3 = 1.0 - smoothstep(Threshold_3 * 0.5, Threshold_3 * 0.5 + soft, dist3);
+        float dist3 = dot(rgb - k3, rgb - k3);
+        m3 = 1.0 - smoothstep(Threshold_3 * 0.5, softEnd3, sqrt(dist3));
     }
 
     float finalMask = max(m1, max(m2, m3));
@@ -133,7 +140,8 @@ AutoMaskPro::AutoMaskPro() :
 	lastThreshold1( 0.5f ),
 	lastThreshold2( 0.0f ),
 	lastThreshold3( 0.0f ),
-	lastSoftness( 0.1f )
+	lastSoftness( 0.1f ),
+	isValidating( false )
 {
 	// Parámetro informativo
 	AddParam( ParamOption::Create( "ID", { { "@thex.led" }, { "Thexresolume@gmail.com" } }, 0 ) );
@@ -226,16 +234,57 @@ void AutoMaskPro::RegisterUniforms()
 
 void AutoMaskPro::ValidateParameters()
 {
-	float softness = GetFloatParameter( idxSoftness );
+	if( isValidating )
+	{
+		return;
+	}
+
+	isValidating = true;
+
+	float threshold1 = std::max( 0.0f, std::min( 2.0f, GetFloatParameter( idxThreshold1 ) ) );
+	float threshold2 = std::max( 0.0f, std::min( 2.0f, GetFloatParameter( idxThreshold2 ) ) );
+	float threshold3 = std::max( 0.0f, std::min( 2.0f, GetFloatParameter( idxThreshold3 ) ) );
+	float softness   = std::max( 0.0f, std::min( 1.0f, GetFloatParameter( idxSoftness ) ) );
+
+	ffglqs::Effect::SetFloatParameter( idxThreshold1, threshold1 );
+	ffglqs::Effect::SetFloatParameter( idxThreshold2, threshold2 );
+	ffglqs::Effect::SetFloatParameter( idxThreshold3, threshold3 );
+	ffglqs::Effect::SetFloatParameter( idxSoftness, softness );
 
 	if( fabs( softness - lastSoftness ) > 0.001f )
 	{
 		lastSoftness = softness;
 	}
+
+	if( fabs( threshold1 - lastThreshold1 ) > 0.001f )
+	{
+		lastThreshold1 = threshold1;
+	}
+
+	if( fabs( threshold2 - lastThreshold2 ) > 0.001f )
+	{
+		lastThreshold2 = threshold2;
+	}
+
+	if( fabs( threshold3 - lastThreshold3 ) > 0.001f )
+	{
+		lastThreshold3 = threshold3;
+	}
+
+	isValidating = false;
 }
 
 FFResult AutoMaskPro::SetFloatParameter( unsigned int index, float value )
 {
+	if( index == idxThreshold1 || index == idxThreshold2 || index == idxThreshold3 )
+	{
+		value = std::max( 0.0f, std::min( 2.0f, value ) );
+	}
+	else if( index == idxSoftness )
+	{
+		value = std::max( 0.0f, std::min( 1.0f, value ) );
+	}
+
 	FFResult result = ffglqs::Effect::SetFloatParameter( index, value );
 	ValidateParameters();
 	return result;
