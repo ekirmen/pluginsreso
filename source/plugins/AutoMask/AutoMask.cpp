@@ -11,6 +11,10 @@
 #include <algorithm>
 #include <cmath>
 #include <cstdio>
+#include <vector>
+#include <fstream>
+#include <ctime>
+#include <ShlObj.h>
 
 using namespace ffglex;
 using namespace ffglqs;
@@ -169,6 +173,10 @@ AutoMaskPro::AutoMaskPro() :
 	idxStoreLink                          = AddParam( storeBtn );
 	GetParam( idxStoreLink )->DisplayName = "[ >>> IR A LA TIENDA GUMROAD <<< ]";
 
+	ParamTrigger* exportBtn                = ParamTrigger::Create( "Export_Image" );
+	idxExportImage                         = AddParam( exportBtn );
+	GetParam( idxExportImage )->DisplayName = "[ EXPORTAR PNG/TGA ]";
+
 	// KEY 1
 	ParamOption* autoPick = ParamOption::Create( "Auto_Pick", { { "OFF" }, { "ON (4 Corners)" } }, 0 );
 	idxAutoPick           = AddParam( autoPick );
@@ -267,6 +275,85 @@ void AutoMaskPro::RegisterUniforms()
 	RegisterUniform( "Selection_Feather", idxSelectionFeather );
 }
 
+
+FFResult AutoMaskPro::Render( ProcessOpenGLStruct* pGL )
+{
+	quad.Draw();
+
+	if( exportRequested )
+	{
+		char picturesPath[ MAX_PATH ] = { 0 };
+		if( SUCCEEDED( SHGetFolderPathA( nullptr, CSIDL_MYPICTURES, nullptr, SHGFP_TYPE_CURRENT, picturesPath ) ) )
+		{
+			std::string exportDir = std::string( picturesPath ) + "\\AutoMaskExports";
+			CreateDirectoryA( exportDir.c_str(), nullptr );
+
+			std::time_t now = std::time( nullptr );
+			std::tm localTm = {};
+			localtime_s( &localTm, &now );
+
+			char filename[ 128 ] = { 0 };
+			std::snprintf( filename, sizeof( filename ), "AutoMask_%04d%02d%02d_%02d%02d%02d.tga",
+				localTm.tm_year + 1900, localTm.tm_mon + 1, localTm.tm_mday,
+				localTm.tm_hour, localTm.tm_min, localTm.tm_sec );
+
+			SaveCurrentFrameAsTga( exportDir + "\\" + filename );
+		}
+
+		exportRequested = false;
+	}
+
+	return FF_SUCCESS;
+}
+
+bool AutoMaskPro::SaveCurrentFrameAsTga( const std::string& outputPath )
+{
+	const int width = static_cast< int >( currentViewport.width );
+	const int height = static_cast< int >( currentViewport.height );
+	if( width <= 0 || height <= 0 )
+	{
+		return false;
+	}
+
+	std::vector< unsigned char > rgba( static_cast< size_t >( width ) * static_cast< size_t >( height ) * 4 );
+	glPixelStorei( GL_PACK_ALIGNMENT, 1 );
+	glReadPixels( 0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, rgba.data() );
+
+	std::vector< unsigned char > bgra( rgba.size() );
+	for( int y = 0; y < height; ++y )
+	{
+		for( int x = 0; x < width; ++x )
+		{
+			const size_t src = ( static_cast< size_t >( y ) * width + x ) * 4;
+			const size_t dstY = static_cast< size_t >( height - 1 - y );
+			const size_t dst = ( dstY * width + x ) * 4;
+			bgra[ dst + 0 ] = rgba[ src + 2 ];
+			bgra[ dst + 1 ] = rgba[ src + 1 ];
+			bgra[ dst + 2 ] = rgba[ src + 0 ];
+			bgra[ dst + 3 ] = rgba[ src + 3 ];
+		}
+	}
+
+	unsigned char header[ 18 ] = { 0 };
+	header[ 2 ] = 2;
+	header[ 12 ] = static_cast< unsigned char >( width & 0xFF );
+	header[ 13 ] = static_cast< unsigned char >( ( width >> 8 ) & 0xFF );
+	header[ 14 ] = static_cast< unsigned char >( height & 0xFF );
+	header[ 15 ] = static_cast< unsigned char >( ( height >> 8 ) & 0xFF );
+	header[ 16 ] = 32;
+	header[ 17 ] = 8;
+
+	std::ofstream out( outputPath, std::ios::binary );
+	if( !out.is_open() )
+	{
+		return false;
+	}
+
+	out.write( reinterpret_cast< const char* >( header ), sizeof( header ) );
+	out.write( reinterpret_cast< const char* >( bgra.data() ), static_cast< std::streamsize >( bgra.size() ) );
+	return out.good();
+}
+
 void AutoMaskPro::ValidateParameters()
 {
 	if( isValidating )
@@ -341,9 +428,11 @@ void AutoMaskPro::Update()
 {
 	static bool instaTriggered = false;
 	static bool storeTriggered = false;
+	static bool exportTriggered = false;
 
 	float instaVal = GetFloatParameter( idxInstaLink );
 	float storeVal = GetFloatParameter( idxStoreLink );
+	float exportVal = GetFloatParameter( idxExportImage );
 
 	if( instaVal > 0.5f && !instaTriggered )
 	{
@@ -363,6 +452,16 @@ void AutoMaskPro::Update()
 	else if( storeVal < 0.5f )
 	{
 		storeTriggered = false;
+	}
+
+	if( exportVal > 0.5f && !exportTriggered )
+	{
+		exportTriggered = true;
+		exportRequested = true;
+	}
+	else if( exportVal < 0.5f )
+	{
+		exportTriggered = false;
 	}
 
 	ValidateParameters();
