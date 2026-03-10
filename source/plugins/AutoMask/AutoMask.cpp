@@ -50,6 +50,11 @@ uniform float by_Input_Alpha;
 uniform float Invert_Alpha;
 uniform float Preview_Mode;
 uniform float Selection_Mode;
+uniform float Local_Selection;
+uniform float Selection_X;
+uniform float Selection_Y;
+uniform float Selection_Radius;
+uniform float Selection_Feather;
 
 void main()
 {
@@ -91,6 +96,15 @@ void main()
     }
 
     float finalMask = max(m1, max(m2, m3));
+
+    if (Local_Selection > 0.5) {
+        vec2 toCenter = i_uv - vec2(Selection_X, Selection_Y);
+        float dist = length(toCenter);
+        float radius = max(Selection_Radius, 0.001);
+        float feather = max(Selection_Feather, 0.001);
+        float localMask = 1.0 - smoothstep(radius, radius + feather, dist);
+        finalMask *= localMask;
+    }
     
     // MODO SELECT o REMOVE
     float a;
@@ -204,6 +218,22 @@ AutoMaskPro::AutoMaskPro() :
 	ParamRange* preview = ParamRange::Create( "Preview_Mode", 0.0f, ParamRange::Range( 0.0f, 3.0f ) );
 	idxPreviewMode      = AddParam( preview );
 
+	ParamOption* localSelection = ParamOption::Create( "Local_Selection", { { "OFF" }, { "ON" } }, 0 );
+	idxLocalSelection           = AddParam( localSelection );
+	GetParam( idxLocalSelection )->DisplayName = "Local Selection";
+
+	ParamRange* selectionX = ParamRange::Create( "Selection_X", 0.5f, ParamRange::Range( 0.0f, 1.0f ) );
+	idxSelectionX         = AddParam( selectionX );
+
+	ParamRange* selectionY = ParamRange::Create( "Selection_Y", 0.5f, ParamRange::Range( 0.0f, 1.0f ) );
+	idxSelectionY         = AddParam( selectionY );
+
+	ParamRange* selectionRadius = ParamRange::Create( "Selection_Radius", 0.25f, ParamRange::Range( 0.01f, 1.0f ) );
+	idxSelectionRadius          = AddParam( selectionRadius );
+
+	ParamRange* selectionFeather = ParamRange::Create( "Selection_Feather", 0.15f, ParamRange::Range( 0.0f, 1.0f ) );
+	idxSelectionFeather          = AddParam( selectionFeather );
+
 	// MODO SELECT/REMOVE
 	ParamOption* selMode                      = ParamOption::Create( "Selection_Mode", { { "Remove" }, { "Select" } }, 0 );
 	idxSelectionMode                          = AddParam( selMode );
@@ -230,6 +260,11 @@ void AutoMaskPro::RegisterUniforms()
 	RegisterUniform( "Invert_Alpha", idxInvertAlpha );
 	RegisterUniform( "Preview_Mode", idxPreviewMode );
 	RegisterUniform( "Selection_Mode", idxSelectionMode );
+	RegisterUniform( "Local_Selection", idxLocalSelection );
+	RegisterUniform( "Selection_X", idxSelectionX );
+	RegisterUniform( "Selection_Y", idxSelectionY );
+	RegisterUniform( "Selection_Radius", idxSelectionRadius );
+	RegisterUniform( "Selection_Feather", idxSelectionFeather );
 }
 
 void AutoMaskPro::ValidateParameters()
@@ -245,11 +280,19 @@ void AutoMaskPro::ValidateParameters()
 	float threshold2 = std::max( 0.0f, std::min( 2.0f, GetFloatParameter( idxThreshold2 ) ) );
 	float threshold3 = std::max( 0.0f, std::min( 2.0f, GetFloatParameter( idxThreshold3 ) ) );
 	float softness   = std::max( 0.0f, std::min( 1.0f, GetFloatParameter( idxSoftness ) ) );
+	float selectionX = std::max( 0.0f, std::min( 1.0f, GetFloatParameter( idxSelectionX ) ) );
+	float selectionY = std::max( 0.0f, std::min( 1.0f, GetFloatParameter( idxSelectionY ) ) );
+	float selectionRadius  = std::max( 0.01f, std::min( 1.0f, GetFloatParameter( idxSelectionRadius ) ) );
+	float selectionFeather = std::max( 0.0f, std::min( 1.0f, GetFloatParameter( idxSelectionFeather ) ) );
 
 	ffglqs::Effect::SetFloatParameter( idxThreshold1, threshold1 );
 	ffglqs::Effect::SetFloatParameter( idxThreshold2, threshold2 );
 	ffglqs::Effect::SetFloatParameter( idxThreshold3, threshold3 );
 	ffglqs::Effect::SetFloatParameter( idxSoftness, softness );
+	ffglqs::Effect::SetFloatParameter( idxSelectionX, selectionX );
+	ffglqs::Effect::SetFloatParameter( idxSelectionY, selectionY );
+	ffglqs::Effect::SetFloatParameter( idxSelectionRadius, selectionRadius );
+	ffglqs::Effect::SetFloatParameter( idxSelectionFeather, selectionFeather );
 
 	if( fabs( softness - lastSoftness ) > 0.001f )
 	{
@@ -280,9 +323,13 @@ FFResult AutoMaskPro::SetFloatParameter( unsigned int index, float value )
 	{
 		value = std::max( 0.0f, std::min( 2.0f, value ) );
 	}
-	else if( index == idxSoftness )
+	else if( index == idxSoftness || index == idxSelectionX || index == idxSelectionY || index == idxSelectionFeather )
 	{
 		value = std::max( 0.0f, std::min( 1.0f, value ) );
+	}
+	else if( index == idxSelectionRadius )
+	{
+		value = std::max( 0.01f, std::min( 1.0f, value ) );
 	}
 
 	FFResult result = ffglqs::Effect::SetFloatParameter( index, value );
