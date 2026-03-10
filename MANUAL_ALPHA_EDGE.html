@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alpha Edge FX - User Manual</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f9f9f9;
+        }
+        .container {
+            background-color: #fff;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        h1, h2, h3 {
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+        h1 {
+            text-align: center;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            border-bottom: none;
+        }
+        .subtitle {
+            text-align: center;
+            color: #7f8c8d;
+            font-size: 1.2em;
+            margin-bottom: 40px;
+        }
+        .lang-switch {
+            text-align: right;
+            margin-bottom: 20px;
+        }
+        .lang-switch a {
+            text-decoration: none;
+            color: #3498db;
+            font-weight: bold;
+            padding: 5px 10px;
+            border: 1px solid #3498db;
+            border-radius: 4px;
+        }
+        .lang-switch a:hover {
+            background-color: #3498db;
+            color: #fff;
+        }
+        .section {
+            margin-bottom: 40px;
+        }
+        .parameter {
+            background-color: #f1f8ff;
+            padding: 15px;
+            border-left: 4px solid #3498db;
+            margin-bottom: 15px;
+            border-radius: 0 4px 4px 0;
+        }
+        .parameter strong {
+            color: #2980b9;
+            font-size: 1.1em;
+        }
+        .tip {
+            background-color: #e8f8f5;
+            padding: 15px;
+            border-left: 4px solid #1abc9c;
+            margin-top: 20px;
+        }
+        .important {
+            background-color: #fff3cd;
+            padding: 15px;
+            border-left: 4px solid #ffc107;
+            margin-top: 20px;
+        }
+        @media print {
+            body {
+                background-color: #fff;
+            }
+            .container {
+                box-shadow: none;
+                padding: 0;
+            }
+            .lang-switch {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container" id="english">
+        <div class="lang-switch">
+            <a href="#espanol">Ver en Español 🇪🇸</a>
+        </div>
+
+        <h1>Alpha Edge FX</h1>
+        <div class="subtitle">User Manual & Installation Guide for Resolume Arena/Avenue</div>
+
+        <div class="section">
+            <h2>1. Installation Guide</h2>
+            <p>Installing Alpha Edge FX is straightforward. It works just like any other custom FFGL plugin in Resolume.</p>
+            
+            <h3>Step-by-Step Installation:</h3>
+            <ol>
+                <li>Locate the compiled file: <strong><code>AlphaEdge.dll</code></strong>.</li>
+                <li>Copy the `.dll` file.</li>
+                <li>Navigate to your Resolume external plugins folder. The default location is usually:
+                    <br><code>C:\Users\[Your_Username]\Documents\Resolume Arena\Extra Effects</code>
+                </li>
+                <li>Paste the `.dll` file into that folder.</li>
+                <li>Open Resolume Arena (or Avenue).</li>
+                <li>Go to the top menu: <strong>Arena/Avenue -> Preferences</strong>.</li>
+                <li>Select the <strong>Video</strong> (or Plugins) tab.</li>
+                <li>Under the FFGL Plugin directories list, ensure your "Extra Effects" folder is listed and click the <strong>Refresh</strong> button.</li>
+            </ol>
+            <div class="important">
+                <strong>Note:</strong> If Resolume was already open, you MUST click Refresh in the Preferences menu for the new plugin to appear in your library.
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>2. How to Use & Workflow</h2>
+            <p>Alpha Edge FX is an <strong>Effect</strong> plugin, which means it needs to be applied to a source clip. It is specifically designed to work with visual content that has an Alpha Channel (transparency).</p>
+            
+            <h3>Basic Workflow:</h3>
+            <ol>
+                <li>Drag and drop a transparent PNG logo, or generate a Native Text clip in Resolume.</li>
+                <li>In the files/effects panel on the right, search for <strong>Alpha Edge FX</strong>.</li>
+                <li>Drag the effect onto your clip or layer.</li>
+                <li>Adjust the parameters to create solid strokes, neon glows, and drop shadows around the contours of your image.</li>
+            </ol>
+        </div>
+
+        <div class="section">
+            <h2>3. Parameter Reference</h2>
+            <p>The plugin is divided into functional sections. Here is what each slider controls:</p>
+
+            <h3>Outer Edge / Stroke (Borders & Glowing)</h3>
+            <div class="parameter">
+                <strong>Edge Color (Hue/Sat/Bri):</strong> Defines the color of the outer border.
+            </div>
+            <div class="parameter">
+                <strong>Edge Width:</strong> Controls how wide or thick the border extends completely outwards from the transparent edge of your logo.
+            </div>
+            <div class="parameter">
+                <strong>Edge Softness:</strong> At 0.0, creates a hard solid Stroke. As you increase this value, the solid border blurs outwards, turning into a Neon Glow / Bloom effect.
+            </div>
+            <div class="parameter">
+                <strong>Glow Intensity:</strong> Adjusts the overall brightness and opacity of the outer edge/glow.
+            </div>
+
+            <h3>Inner Glow (Internal Volume)</h3>
+            <div class="parameter">
+                <strong>Inner Color (Hue/Sat/Bri):</strong> Defines the color used to tint the inside of your logo.
+            </div>
+            <div class="parameter">
+                <strong>Inner Glow Str (Strength):</strong> Controls how intensely the edge color "bleeds" inwards into the original image, creating a 3D inner shadow or inner neon tube effect.
+            </div>
+
+            <h3>Drop Shadow</h3>
+            <div class="parameter">
+                <strong>Shadow Offset X / Y:</strong> Moves the drop shadow horizontally and vertically relative to the logo.
+            </div>
+            <div class="parameter">
+                <strong>Shadow Spread:</strong> Controls how blurry or dispersed the drop shadow is.
+            </div>
+            <div class="parameter">
+                <strong>Shadow Opacity:</strong> Controls the darkness (Alpha) of the shadow. Set to 0.0 to completely disable the shadow.
+            </div>
+
+            <h3>Linear Transparency Fade</h3>
+            <p>These parameters allow you to smoothly mask out parts of the logo using a linear gradient, similar to a layer mask in Photoshop.</p>
+            <div class="parameter">
+                <strong>Fade Start X/Y & Fade End X/Y:</strong> Coordinates defining the start and end points of the transparency gradient across the screen.
+            </div>
+            <div class="parameter">
+                <strong>Fade Strength:</strong> Controls the intensity of the fading effect. At 0.0, the image is fully visible. At 1.0, the image fades out precisely from the Start point to the End point.
+            </div>
+
+            <div class="tip">
+                <strong>VJ Tip:</strong> Link the <em>Glow Intensity</em> or <em>Edge Width</em> parameters to the Audio FFT (BPM) in Resolume so your logo's neon glow pulses in sync with the kick drum!
+            </div>
+        </div>
+    </div>
+
+    <!-- Separator for Printing -->
+    <div style="page-break-after: always;"></div>
+    <hr style="margin: 60px 0; border: 2px dashed #bdc3c7;">
+
+    <div class="container" id="espanol">
+        <div class="lang-switch">
+            <a href="#english">Read in English 🇬🇧</a>
+        </div>
+
+        <h1>Alpha Edge FX</h1>
+        <div class="subtitle">Manual de Usuario & Guía de Instalación para Resolume Arena/Avenue</div>
+
+        <div class="section">
+            <h2>1. Guía de Instalación</h2>
+            <p>Instalar Alpha Edge FX es muy sencillo. Funciona exactamente igual que cualquier otro plugin FFGL externo en Resolume.</p>
+            
+            <h3>Instalación Paso a Paso:</h3>
+            <ol>
+                <li>Ubica el archivo compilado: <strong><code>AlphaEdge.dll</code></strong>.</li>
+                <li>Copia el archivo `.dll`.</li>
+                <li>Navega hasta la carpeta de plugins externos de Resolume en tu computadora. La ruta por defecto suele ser:
+                    <br><code>C:\Usuarios\[Tu_Usuario]\Documentos\Resolume Arena\Extra Effects</code>
+                </li>
+                <li>Pega el archivo `.dll` dentro de esa carpeta.</li>
+                <li>Abre Resolume Arena (o Avenue).</li>
+                <li>Ve al menú superior: <strong>Arena/Avenue -> Preferencias (Preferences)</strong>.</li>
+                <li>Selecciona la pestaña <strong>Video</strong> (o Plugins).</li>
+                <li>En la lista de directorios de Plugins FFGL, asegúrate de que tu carpeta "Extra Effects" esté en la lista y haz clic en el botón <strong>Actualizar (Refresh)</strong>.</li>
+            </ol>
+            <div class="important">
+                <strong>Nota:</strong> Si ya tenías Resolume abierto al momento de pegar el archivo, es OBLIGATORIO que hagas clic en 'Actualizar' en Preferencias para que el programa detecte el nuevo plugin.
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>2. Cómo Usarlo / Flujo de Trabajo</h2>
+            <p>Alpha Edge FX es un <strong>Efecto (Effect)</strong>, lo que significa que debe aplicarse encima de un clip fuente. Está diseñado específicamente para trabajar con contenido visual que posea un Canal Alpha (transparencia).</p>
+            
+            <h3>Flujo de Trabajo Básico:</h3>
+            <ol>
+                <li>Arrastra un logotipo PNG transparente a una capa, o genera un clip de "Texto" nativo de Resolume.</li>
+                <li>En el panel de archivos y efectos a la derecha, busca <strong>Alpha Edge FX</strong> en la lupa.</li>
+                <li>Arrastra el efecto y suéltalo sobre tu clip o capa.</li>
+                <li>Ajusta los deslizadores (sliders) para crear trazos sólidos, brillos de neón y sombras paralelas alrededor del contorno exacto de tu imagen.</li>
+            </ol>
+        </div>
+
+        <div class="section">
+            <h2>3. Referencia de Parámetros</h2>
+            <p>El plugin está dividido en secciones funcionales. Esto es lo que controla cada deslizador:</p>
+
+            <h3>Outer Edge / Borde Exterior (Trazos y Resplandores)</h3>
+            <div class="parameter">
+                <strong>Edge Color (Hue/Sat/Bri):</strong> Define el color del borde exterior mediante la clásica rueda de color.
+            </div>
+            <div class="parameter">
+                <strong>Edge Width:</strong> Controla qué tan ancho o grueso es el borde que crece hacia afuera de tu logotipo.
+            </div>
+            <div class="parameter">
+                <strong>Edge Softness:</strong> En 0.0, crea un "Trazo Sólido" con bordes duros. A medida que subes este valor, el borde se difumina y se suaviza, convirtiéndose en un <strong>Glow o Resplandor de Neón</strong>.
+            </div>
+            <div class="parameter">
+                <strong>Glow Intensity:</strong> Ajusta el brillo general visual y la opacidad del borde/resplandor.
+            </div>
+
+            <h3>Inner Glow (Resplandor Interior)</h3>
+            <div class="parameter">
+                <strong>Inner Color (Hue/Sat/Bri):</strong> Define el color utilizado para "teñir" el interior de tu logo desde los bordes.
+            </div>
+            <div class="parameter">
+                <strong>Inner Glow Str (Fuerza):</strong> Controla la intensidad con la que el color interior invade la imagen original. Perfecto para dar volumen 3D o hacer que un logo blanco parezca un tubo de neón con luz concentrada.
+            </div>
+
+            <h3>Drop Shadow (Sombra Paralela)</h3>
+            <div class="parameter">
+                <strong>Shadow Offset X / Y:</strong> Desplaza la ubicación de la sombra en el eje horizontal y vertical con respecto a tu logo.
+            </div>
+            <div class="parameter">
+                <strong>Shadow Spread:</strong> Controla qué tan desenfocada, suave o dispersa es la sombra trasera.
+            </div>
+            <div class="parameter">
+                <strong>Shadow Opacity:</strong> Controla el nivel de oscuridad (Transparencia) de la sombra. Déjalo en 0.0 si deseas apagar la sombra completamente para ahorrar recursos.
+            </div>
+
+            <h3>Degradado Lineal de Transparencia (Linear Fade)</h3>
+            <p>Estos parámetros te permiten enmascarar "dibujando" un degradado de invisibilidad, como una máscara de capa en Photoshop, para fundir la base de un logo en color negro oscuro.</p>
+            <div class="parameter">
+                <strong>Fade Start X/Y & Fade End X/Y:</strong> Coordenadas que definen los puntos de inicio (Start) y final (End) en la pantalla por donde pasará el degradado direccional.
+            </div>
+            <div class="parameter">
+                <strong>Fade Strength:</strong> Controla la intensidad del efecto de borrado. En 0.0, la imagen se ve completa. En 1.0, la imagen se desvanecerá gradualmente haciéndose transparente desde el punto Start al punto End.
+            </div>
+
+            <div class="tip">
+                <strong>VJ Tip:</strong> ¡Enlaza los parámetros de <em>Glow Intensity</em> o <em>Edge Width</em> a la animación de Audio FFT (BPM) nativa de Resolume para que el resplandor de tu logo palpite al ritmo del bombo (Kick)!
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

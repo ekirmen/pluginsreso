@@ -1,0 +1,53 @@
+name: Build FFGL Plugins macOS
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+
+      - name: Verificar Xcode
+        run: xcodebuild -version
+
+      # Compilar con scheme ALL
+      - name: Compilar plugins (Release)
+        working-directory: build/osx
+        run: |
+          xcodebuild \
+            -project FFGLPlugins.xcodeproj \
+            -scheme ALL \
+            -configuration Release \
+            ONLY_ACTIVE_ARCH=NO \
+            MACOSX_DEPLOYMENT_TARGET=10.15 \
+            -derivedDataPath "${{ github.workspace }}/derived_data" \
+            build
+
+      # Los bundles se generan en binaries/release/ (configurado en el xcconfig del proyecto)
+      - name: Recopilar bundles FFGL
+        run: |
+          mkdir -p output_plugins
+          echo "=== Bundles en binaries/release ==="
+          ls -la "${{ github.workspace }}/binaries/release/"
+          echo ""
+          find "${{ github.workspace }}/binaries/release" -name "*.bundle" -type d | while read bundle; do
+            name=$(basename "$bundle")
+            echo "✅ Copiando: $name"
+            cp -r "$bundle" "output_plugins/$name"
+          done
+          echo ""
+          echo "=== Plugins finales ==="
+          ls -la output_plugins/
+
+      - name: Subir plugins
+        uses: actions/upload-artifact@v4
+        with:
+          name: FFGL-Plugins-macOS
+          path: output_plugins/
+          if-no-files-found: error

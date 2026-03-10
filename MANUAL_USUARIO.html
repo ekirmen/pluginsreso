@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manual de Usuario - Screen Capture</title>
+    <style>
+        :root {
+            --primary: #0078d4;
+            --secondary: #2b2b2b;
+            --accent: #f7630c;
+            --bg: #f3f2f1;
+            --surface: #ffffff;
+            --text: #323130;
+            --text-light: #605e5c;
+            --border: #e1dfdd;
+            --code-bg: #2d2d2d;
+            --code-text: #f8f8f2;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            color: var(--text);
+            background-color: var(--bg);
+            margin: 0;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 850px;
+            margin: 0 auto;
+            background: var(--surface);
+            padding: 60px;
+            border-radius: 8px;
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+        }
+
+        /* HEADER */
+        header {
+            border-bottom: 2px solid var(--primary);
+            padding-bottom: 20px;
+            margin-bottom: 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            color: var(--secondary);
+            margin: 0;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .version {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        h2 {
+            color: var(--primary);
+            font-size: 1.5rem;
+            margin-top: 50px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+        }
+
+        h2::before {
+            content: '';
+            display: inline-block;
+            width: 8px;
+            height: 24px;
+            background-color: var(--accent);
+            margin-right: 12px;
+            border-radius: 2px;
+        }
+
+        h3 {
+            color: var(--secondary);
+            margin-top: 30px;
+            font-size: 1.1rem;
+        }
+
+        /* STEPS GRID */
+        .steps-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .step-card {
+            background: #faf9f8;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 20px;
+            transition: transform 0.2s;
+        }
+
+        .step-card:hover {
+            border-color: var(--primary);
+        }
+
+        .step-number {
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--primary);
+            text-transform: uppercase;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        /* CODE BLOCKS */
+        code {
+            background-color: #f3f2f1;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.9em;
+            color: #d13438;
+            border: 1px solid #edebe9;
+        }
+
+        .terminal {
+            background-color: var(--code-bg);
+            color: var(--code-text);
+            padding: 20px;
+            border-radius: 6px;
+            font-family: 'Consolas', monospace;
+            overflow-x: auto;
+            border-left: 4px solid var(--accent);
+            margin: 15px 0;
+            font-size: 0.9rem;
+        }
+
+        /* PARAMETERS LIST */
+        .param-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .param-table tr {
+            border-bottom: 1px solid var(--border);
+        }
+
+        .param-table tr:last-child {
+            border-bottom: none;
+        }
+
+        .param-table td {
+            padding: 15px 10px;
+            vertical-align: top;
+        }
+
+        .param-name {
+            font-weight: 700;
+            color: var(--secondary);
+            width: 180px;
+        }
+
+        /* ALERTS */
+        .alert {
+            padding: 20px;
+            border-radius: 6px;
+            margin: 30px 0;
+            display: flex;
+            align-items: flex-start;
+        }
+
+        .alert-warning {
+            background-color: #fff4ce;
+            border-left: 4px solid #ffb900;
+            color: #3b3a39;
+        }
+
+        .alert-icon {
+            font-size: 1.5rem;
+            margin-right: 15px;
+            line-height: 1;
+        }
+
+        .alert-content strong {
+            display: block;
+            margin-bottom: 5px;
+            color: #201f1e;
+        }
+
+        /* FOOTER */
+        footer {
+            margin-top: 80px;
+            padding-top: 30px;
+            border-top: 1px solid var(--border);
+            text-align: center;
+            color: var(--text-light);
+            font-size: 0.85rem;
+        }
+
+        @media print {
+            body {
+                background-color: white;
+                padding: 0;
+            }
+
+            .container {
+                box-shadow: none;
+                padding: 0;
+                max-width: 100%;
+            }
+
+            header {
+                margin-bottom: 20px;
+            }
+
+            h2 {
+                margin-top: 30px;
+            }
+
+            .step-card {
+                break-inside: avoid;
+                border: 1px solid #ccc;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <header>
+            <h1>Plugin Screen Capture</h1>
+            <div class="version">Versión 2.0 &bull; Resolume 7+</div>
+        </header>
+
+        <p style="font-size: 1.1rem; color: var(--text-light); margin-bottom: 40px;">
+            Manual técnico para la instalación y configuración avanzada de captura de ventanas en tiempo real.
+        </p>
+
+        <!-- 1. INSTALACION -->
+        <h2>Instalación</h2>
+        <div class="steps-grid">
+            <div class="step-card">
+                <span class="step-number">Paso 01</span>
+                <strong>Localizar Archivo</strong>
+                <p>Encuentre el archivo <code>ScreenCapture.dll</code> en su paquete de descarga.</p>
+            </div>
+            <div class="step-card">
+                <span class="step-number">Paso 02</span>
+                <strong>Copiar a Efectos</strong>
+                <p>Pegue el archivo en:<br>
+                    <code>Documentos\Resolume Arena\Extra Effects</code>
+                </p>
+            </div>
+            <div class="step-card">
+                <span class="step-number">Paso 03</span>
+                <strong>Cargar en Resolume</strong>
+                <p>Busque "Screen Capture" en la pestaña <em>Sources</em> y arrástrelo a un clip.</p>
+            </div>
+        </div>
+
+        <!-- 2. USO VISUAL -->
+        <h2>Flujo de Trabajo</h2>
+        <p>El sistema utiliza un selector de ventanas dinámico en lugar de un menú desplegable.</p>
+
+        <table class="param-table">
+            <tr>
+                <td class="param-name">Window Select</td>
+                <td>Deslizador principal (0.0 - 1.0). Muévalo lentamente para recorrer todas las aplicaciones abiertas.
+                </td>
+            </tr>
+            <tr>
+                <td class="param-name">Refresh List</td>
+                <td>Use este botón si abre una nueva ventana <strong>después</strong> de haber cargado el efecto.</td>
+            </tr>
+        </table>
+
+        <div class="alert alert-warning">
+            <div class="alert-icon">⚠️</div>
+            <div class="alert-content">
+                <strong>Modo Ventana Requerido</strong>
+                Las aplicaciones (juegos, reproductores) deben ejecutarse en <strong>Modo Ventana</strong> o
+                <strong>Borderless</strong>. El modo "Pantalla Completa Exclusiva" detendrá la captura si la ventana
+                pierde el foco.
+            </div>
+        </div>
+
+        <!-- 3. PARAMETROS -->
+        <h2>Ajustes de Imagen (Crop)</h2>
+        <p>Herramientas para limpiar la captura y ajustar la composición.</p>
+
+        <table class="param-table">
+            <tr>
+                <td class="param-name">Crop (L/R/T/B)</td>
+                <td>Cuatro deslizadores para recortar bordes no deseados (barras de título, marcos de ventana).</td>
+            </tr>
+            <tr>
+                <td class="param-name">Pos X / Pos Y</td>
+                <td>Desplaza la imagen dentro del lienzo.<br>
+                    <small>0.5 = Centro | < 0.5=Izquierda/Abajo |> 0.5 = Derecha/Arriba</small>
+                </td>
+            </tr>
+            <tr>
+                <td class="param-name">Fit Aspect Ratio</td>
+                <td>Corrige la distorsión. Actívelo si la ventana capturada se ve estirada o aplastada.</td>
+            </tr>
+            <tr>
+                <td class="param-name">Swap RB</td>
+                <td>Intercambia canales Rojo y Azul. (Corrección de color para ciertas GPUs).</td>
+            </tr>
+        </table>
+
+        <!-- 4. NAVEGADORES -->
+        <h2>Captura de Navegadores</h2>
+        <p>Para capturar <strong>Chrome</strong> o <strong>Edge</strong> sin que la pantalla se vea negra, debe
+            desactivar la aceleración de hardware o usar "flags" de inicio.</p>
+
+        <h3>Método Recomendado: Flags de Inicio</h3>
+        <p>Edite el acceso directo de su navegador y agregue estos comandos al final del campo "Destino":</p>
+
+        <div class="terminal">
+            --disable-gpu --disable-d3d11 --disable-software-rasterizer
+        </div>
+
+        <p><strong>Ejemplo completo:</strong></p>
+        <div class="terminal" style="background-color: #f3f2f1; color: #333; border-left-color: #ccc;">
+            "C:\Program Files\Microsoft\Edge\Application\msedge.exe" --disable-gpu
+        </div>
+
+        <h3>Método Alternativo: Ajustes</h3>
+        <p>Vaya a <code>Configuración > Sistema</code> en el navegador y desactive la opción <strong>"Usar aceleración
+                de hardware"</strong>.</p>
+
+        <hr style="margin-top: 40px; border: 0; border-top: 1px solid var(--border);">
+        <footer>
+            Screen Capture Plugin &bull; Documentación Técnica &bull; 2026
+        </footer>
+    </div>
+
+</body>
+
+</html>

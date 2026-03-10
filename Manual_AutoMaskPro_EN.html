@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AutoMaskPro - User Manual</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@300;400;600&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --primary: #00ff88;
+            --bg: #0a0a0c;
+            --surface: #16161a;
+            --text: #e0e0e0;
+            --accent: #222226;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 40px;
+            background: var(--surface);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            border: 1px solid var(--accent);
+        }
+
+        header {
+            text-align: center;
+            border-bottom: 1px solid var(--accent);
+            padding-bottom: 30px;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            font-family: 'Orbitron', sans-serif;
+            color: var(--primary);
+            font-size: 2.5em;
+            margin: 0;
+            letter-spacing: 2px;
+        }
+
+        .v-badge {
+            display: inline-block;
+            background: var(--primary);
+            color: black;
+            padding: 3px 10px;
+            border-radius: 5px;
+            font-weight: bold;
+            font-size: 0.8em;
+            margin-top: 10px;
+        }
+
+        h2 {
+            font-family: 'Orbitron', sans-serif;
+            border-left: 4px solid var(--primary);
+            padding-left: 15px;
+            margin-top: 40px;
+            font-size: 1.4em;
+        }
+
+        h3 {
+            color: var(--primary);
+            margin-top: 25px;
+        }
+
+        .step {
+            background: var(--accent);
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+        }
+
+        .param-grid {
+            display: grid;
+            grid-template-columns: 200px 1fr;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .param-name {
+            font-weight: bold;
+            color: var(--primary);
+            background: rgba(0, 255, 136, 0.1);
+            padding: 5px 10px;
+            border-radius: 6px;
+            text-align: right;
+        }
+
+        .pro-tip {
+            border: 1px dashed var(--primary);
+            padding: 20px;
+            border-radius: 12px;
+            background: rgba(0, 255, 136, 0.05);
+            margin-top: 30px;
+        }
+
+        footer {
+            margin-top: 50px;
+            text-align: center;
+            font-size: 0.9em;
+            color: #888;
+        }
+
+        .links a {
+            color: var(--primary);
+            text-decoration: none;
+            margin: 0 15px;
+            font-weight: bold;
+        }
+
+        @media print {
+            body {
+                background: white;
+                color: black;
+            }
+
+            .container {
+                box-shadow: none;
+                border: none;
+                background: white;
+                width: 100%;
+                margin: 0;
+            }
+
+            .step,
+            .param-name {
+                background: #f0f0f0;
+                border: 1px solid #ddd;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>AUTOMASK PRO</h1>
+            <div class="v-badge">TRIPLE KEYER V2.1</div>
+            <p>The ultimate smart background remover for Resolume.</p>
+        </header>
+
+        <section id="what-is">
+            <h2>What is AutoMaskPro?</h2>
+            <p>AutoMaskPro is a high-end FFGL plugin designed specifically for VJs and content creators seeking perfect
+                chroma keying without the hassle. Compatible with Intel UHD graphics cards and optimized for maximum
+                live performance fluidity.</p>
+        </section>
+
+        <section id="installation">
+            <h2>Installation</h2>
+            <div class="step">
+                <strong>Step 1:</strong> Copy the <code>AutoMaskPro.dll</code> file.
+            </div>
+            <div class="step">
+                <strong>Step 2:</strong> Paste it into your Resolume plugins folder:<br>
+                <code>C:\Program Files\Resolume Avenue\plugins\vfx</code> (or your custom path).
+            </div>
+            <div class="step">
+                <strong>Step 3:</strong> Open Resolume. In the effects tab, search for "AutoMaskPro" and drag it onto
+                your clip.
+            </div>
+        </section>
+
+        <section id="controls">
+            <h2>Parameters Guide</h2>
+            <div class="param-grid">
+                <div class="param-name">Auto_Pick</div>
+                <div>Activates automatic color sampling based on the corners of your video. Let the plugin decide for
+                    you!</div>
+
+                <div class="param-name">Key_Color 1, 2, 3</div>
+                <div>Select up to 3 different tones to remove. Perfect for backgrounds with shadows or gradients.</div>
+
+                <div class="param-name">Threshold (1-3)</div>
+                <div>Adjust the keying strength for each color. Use it to erase difficult areas.</div>
+
+                <div class="param-name">Softness</div>
+                <div>Smooths the edges for perfect integration with the background.</div>
+
+                <div class="param-name">Edge_Erode</div>
+                <div>"Shrinks" the alpha mask inwards. Use it to remove that hated "green halo" on the edges.</div>
+
+                <div class="param-name">Spill_Removal</div>
+                <div>Removes green reflections leaking onto your object (especially on metallic logos).</div>
+            </div>
+        </section>
+
+        <section class="pro-tip">
+            <h3>⚡ Pro Tips</h3>
+            <ul>
+                <li><strong>Black Protection:</strong> The plugin automatically protects dark areas inside your logo so
+                    they don't accidentally become transparent.</li>
+                <li><strong>Preview Mode:</strong> Dial this slider up to see the checkerboard background or the Alpha
+                    channel directly. It helps a lot in cleaning up those last pixels!</li>
+                <li><strong>Direct Links:</strong> Press the Instagram or Store buttons inside Resolume to check out my
+                    latest releases!</li>
+            </ul>
+        </section>
+
+        <footer>
+            <p>Developed by <strong>Ricardo Colmenares</strong></p>
+            <div class="links">
+                <a href="https://www.instagram.com/thex.led/">Instagram</a>
+                <a href="https://thexresolume.gumroad.com/">Gumroad Shop</a>
+                <span>thexvj@gmail.com</span>
+            </div>
+        </footer>
+    </div>
+</body>
+
+</html>

@@ -1,0 +1,25 @@
+# Build and output directories
+build/
+out/
+binaries/
+dist/
+.vs/
+*.user
+*.suo
+*.sln
+*.vcxproj
+*.filters
+*.tlog
+*.log
+*.obj
+*.pdb
+*.idb
+*.ilk
+*.exe
+*.dll
+*.lib
+*.exp
+
+# OS specific
+.DS_Store
+Thumbs.db
