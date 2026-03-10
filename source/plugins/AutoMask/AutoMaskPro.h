@@ -10,11 +10,13 @@ public:
 	~AutoMaskPro();
 
 	void Update() override;
+	FFResult Render( ProcessOpenGLStruct* pGL ) override;
 	FFResult SetFloatParameter( unsigned int index, float value ) override;
 
 private:
 	void RegisterUniforms();
 	void ValidateParameters();
+	bool SaveCurrentFrameAsTga( const std::string& outputPath );
 
 	// Cache de valores
 	float lastThreshold1;
@@ -46,4 +48,7 @@ private:
 	unsigned int idxSelectionFeather;
 	unsigned int idxInstaLink;
 	unsigned int idxStoreLink;
+	unsigned int idxExportImage;
+
+	bool exportRequested = false;
 };
