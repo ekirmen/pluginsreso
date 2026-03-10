@@ -1,27 +1,23 @@
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-#include <shellapi.h>
-#pragma comment( lib, "shell32.lib" )
-
 #include "UnMultiply.h"
-#include "ffglquickstart/FFGLParamRange.h"
+
+#include "ffglquickstart/FFGLParamBool.h"
 #include "ffglquickstart/FFGLParamOption.h"
-#include "ffglquickstart/FFGLParamTrigger.h"
+#include "ffglquickstart/FFGLParamRange.h"
 
 using namespace ffglex;
 using namespace ffglqs;
 
 static CFFGLPluginInfo PluginInfo(
-	PluginFactory< AutoMaskPro >,
-	"AMPR",
-	"AutoMaskPro",
+	PluginFactory< UnMultiply >,
+	"UNMP",
+	"UnMultiply",
 	2,
 	1,
 	1,
-	2,
+	0,
 	FF_EFFECT,
-	"Ultimate Surgical Keyer. Intel UHD Stable Build.",
-	"By: Thexresolume@gmail.com | IG: @thex.led" );
+	"Extracts alpha from color and optionally de-premultiplies/premultiplies output.",
+	"TheX" );
 
 static const char _fragmentShaderCode[] = R"(
 void main()
@@ -29,107 +25,76 @@ void main()
 	vec4 base = texture( inputTexture, i_uv );
 	vec3 rgb = base.rgb;
 
-	// 1. AUTO-PICK SENSING
-	vec3 c1 = texture( inputTexture, vec2( 0.02, 0.02 ) ).rgb;
-	vec3 c2 = texture( inputTexture, vec2( 0.98, 0.02 ) ).rgb;
-	vec3 c3 = texture( inputTexture, vec2( 0.02, 0.98 ) ).rgb;
-	vec3 c4 = texture( inputTexture, vec2( 0.98, 0.98 ) ).rgb;
-	vec3 avgCorner = ( c1 + c2 + c3 + c4 ) / 4.0;
-	
-	vec3 k1 = mix( Key_Color.rgb, avgCorner, step( 0.5, Auto_Pick ) );
-
-	float soft = max( Softness, 0.001 );
-	
-	// Primary Mask
-	float m1 = 1.0 - smoothstep( Threshold_1 * 0.5, Threshold_1 * 0.5 + soft, distance( rgb, k1 ) );
-	
-	// Extra Mask 2
-	float m2 = 0.0;
-	if ( Enable_2 > 0.5 ) {
-		m2 = 1.0 - smoothstep( Threshold_2 * 0.5, Threshold_2 * 0.5 + soft, distance( rgb, Key_Color_2.rgb ) );
+	if (Unpremult > 0.5 && base.a > 0.00001) {
+		rgb /= base.a;
 	}
 
-	// Extra Mask 3
-	float m3 = 0.0;
-	if ( Enable_3 > 0.5 ) {
-		m3 = 1.0 - smoothstep( Threshold_3 * 0.5, Threshold_3 * 0.5 + soft, distance( rgb, Key_Color_3.rgb ) );
+	float wSum = abs(R_weight) + abs(G_weight) + abs(B_weight);
+	vec3 safeWeights = vec3(R_weight, G_weight, B_weight);
+	if (wSum < 0.00001) {
+		safeWeights = vec3(0.0, 0.0, 1.0);
+		wSum = 1.0;
 	}
 
-	float finalMask = max( m1, max( m2, m3 ) );
-	float a = 1.0 - finalMask;
+	float matte = dot(rgb, safeWeights) / wSum;
+	matte = clamp(matte, 0.0, 1.0);
 
-	// LOGO PRESERVATION
-	float lum = dot( rgb, vec3( 0.299, 0.587, 0.114 ) );
-	float blackArea = 1.0 - smoothstep( 0.0, 0.15, lum );
-	a = max( a, blackArea * Logo_Protect );
+	float whiteCut = max(0.0, 1.0 - White_point);
+	float denom = max(whiteCut - Black_clip, 0.00001);
+	float shaped = clamp((matte - Black_clip) / denom, 0.0, 1.0);
 
-	if ( by_Input_Alpha > 0.5 ) a *= base.a;
-	if ( Invert_Alpha > 0.5 ) a = 1.0 - a;
-	
-	vec3 outRGB = rgb;
-	float outA = a;
-
-	if ( Preview_Mode > 0.5 ) {
-		if ( Preview_Mode < 1.5 ) {
-			vec2 cp = floor( i_uv * resolution.xy / 20.0 );
-			float pat = mod( cp.x + cp.y, 2.0 );
-			outRGB = mix( mix( vec3( 0.1 ), vec3( 0.2 ), pat ), rgb, outA );
-			outA = 1.0;
-		} else {
-			outRGB = vec3( outA );
-			outA = 1.0;
-		}
+	if (Feather > 0.00001) {
+		float low = clamp(0.5 - Feather * 0.5, 0.0, 1.0);
+		float high = clamp(0.5 + Feather * 0.5, 0.0, 1.0);
+		shaped = smoothstep(low, high, shaped);
 	}
 
-	fragColor = vec4( outRGB * ( Preview_Mode > 0.5 ? 1.0 : outA ), outA );
+	float outA = pow(shaped, max(Alpha_gamma, 0.00001));
+
+	if (By_input_Alpha > 0.5) {
+		outA *= base.a;
+	}
+
+	outA = clamp(outA * Opacity, 0.0, 1.0);
+
+	float fringeMask = smoothstep(Fringe_knee, 1.0, 1.0 - outA);
+	vec3 neutral = vec3(dot(rgb, vec3(0.333333)));
+	vec3 fringeFixed = mix(rgb, neutral, clamp(Fringe_supp * fringeMask, 0.0, 1.0));
+
+	vec3 outRGB = fringeFixed;
+	if (Premult_output > 0.5) {
+		outRGB *= outA;
+	}
+
+	if (Blend_mode > 0.5) {
+		outRGB = vec3(outA);
+	}
+
+	fragColor = vec4(clamp(outRGB, 0.0, 1.0), outA);
 }
 )";
 
-AutoMaskPro::AutoMaskPro()
+UnMultiply::UnMultiply()
 {
-	AddParam( ParamOption::Create( "ID", { { "@thex.led" }, { "Thexresolume@gmail.com" } }, 0 ) );
-
-	// Link buttons using shader-safe internal names + descriptive display names
-	AddParam( ParamTrigger::Create( "Insta_Link" ) );
-	SetParamDisplayName( (unsigned int)params.size() - 1, "[ >>> VISITAR INSTAGRAM <<< ]", false );
-
-	AddParam( ParamTrigger::Create( "Store_Link" ) );
-	SetParamDisplayName( (unsigned int)params.size() - 1, "[ >>> IR A LA TIENDA GUMROAD <<< ]", false );
-
-	AddParam( ParamOption::Create( "Auto_Pick", { { "OFF" }, { "ON (4 Corners)" } }, 0 ) );
-	AddHueColorParam( "Key_Color" );
-	GetParam( "Key_Color" )->SetValue( 0.33f );
-	AddParam( ParamRange::Create( "Threshold_1", 0.5f, ParamRange::Range( 0.0f, 2.0f ) ) );
-
-	AddParam( ParamOption::Create( "Enable_2", { { "OFF" }, { "ON" } }, 0 ) );
-	AddHueColorParam( "Key_Color_2" );
-	AddParam( ParamRange::Create( "Threshold_2", 0.0f, ParamRange::Range( 0.0f, 2.0f ) ) );
-
-	AddParam( ParamOption::Create( "Enable_3", { { "OFF" }, { "ON" } }, 0 ) );
-	AddHueColorParam( "Key_Color_3" );
-	AddParam( ParamRange::Create( "Threshold_3", 0.0f, ParamRange::Range( 0.0f, 2.0f ) ) );
-
-	AddParam( ParamRange::Create( "Softness", 0.1f, ParamRange::Range( 0.0f, 1.0f ) ) );
-	AddParam( ParamRange::Create( "Logo_Protect", 1.0f, ParamRange::Range( 0.0f, 1.0f ) ) );
-	AddParam( ParamRange::Create( "by_Input_Alpha", 1.0f, ParamRange::Range( 0.0f, 1.0f ) ) );
-	AddParam( ParamRange::Create( "Invert_Alpha", 0.0f, ParamRange::Range( 0.0f, 1.0f ) ) );
-	AddParam( ParamRange::Create( "Preview_Mode", 0.0f, ParamRange::Range( 0.0f, 2.0f ) ) );
+	AddParam( ParamOption::Create( "Blend_mode", { { "Alpha" }, { "Matte Preview" } }, 0 ) );
+	AddParam( ParamRange::Create( "Opacity", 1.0f, ParamRange::Range( 0.0f, 1.0f ) ) );
+	AddParam( ParamOption::Create( "Model", { { "RGB" } }, 0 ) );
+	AddParam( ParamRange::Create( "R_weight", 0.0f, ParamRange::Range( -2.0f, 2.0f ) ) );
+	AddParam( ParamRange::Create( "G_weight", 0.0f, ParamRange::Range( -2.0f, 2.0f ) ) );
+	AddParam( ParamRange::Create( "B_weight", 1.0f, ParamRange::Range( -2.0f, 2.0f ) ) );
+	AddParam( ParamRange::Create( "Black_clip", 0.0f, ParamRange::Range( 0.0f, 1.0f ) ) );
+	AddParam( ParamRange::Create( "White_point", 0.0f, ParamRange::Range( 0.0f, 1.0f ) ) );
+	AddParam( ParamRange::Create( "Feather", 0.0f, ParamRange::Range( 0.0f, 1.0f ) ) );
+	AddParam( ParamRange::Create( "Alpha_gamma", 0.25f, ParamRange::Range( 0.01f, 4.0f ) ) );
+	AddParam( ParamBool::Create( "Unpremult", false ) );
+	AddParam( ParamBool::Create( "Premult_output", false ) );
+	AddParam( ParamBool::Create( "By_input_Alpha", false ) );
+	AddParam( ParamRange::Create( "Fringe_knee", 0.25f, ParamRange::Range( 0.0f, 1.0f ) ) );
+	AddParam( ParamRange::Create( "Fringe_supp", 0.5f, ParamRange::Range( 0.0f, 1.0f ) ) );
 
 	SetFragmentShader( _fragmentShaderCode );
 }
 
-void AutoMaskPro::Update()
-{
-	if( GetParam( "Insta_Link" )->GetValue() > 0.5f )
-	{
-		ShellExecuteA( NULL, "open", "https://www.instagram.com/thex.led/", NULL, NULL, SW_SHOWNORMAL );
-	}
-	if( GetParam( "Store_Link" )->GetValue() > 0.5f )
-	{
-		ShellExecuteA( NULL, "open", "https://thexresolume.gumroad.com/", NULL, NULL, SW_SHOWNORMAL );
-	}
-}
-
-AutoMaskPro::~AutoMaskPro()
+UnMultiply::~UnMultiply()
 {
 }
